@@ -260,19 +260,19 @@ net_config_check() {
 # rvolume is mounted at /var/motr2.
 prepare_var_motr_dirs() {
     log "${FUNCNAME[0]}: make sure there are no stale mounts hanging..."
-    mountpoint -q /var/motr1 && sudo umount /var/motr1 || true
+    ssh $lnode 'mountpoint -q /var/motr1 && sudo umount /var/motr1 || true'
     ssh $rnode 'mountpoint -q /var/motr2 && sudo umount /var/motr2 || true'
 
     log "${FUNCNAME[0]}: check & upgrade old setups with /var/motr directories..."
-    [ -d /var/motr ] && ! [ -d /var/motr1 ] && mv /var/motr /var/motr1 || true
+    ssh $lnode '[ -d /var/motr ] && ! [ -d /var/motr1 ] && mv /var/motr /var/motr1 || true'
     ssh $rnode '[ -d /var/motr ] && ! [ -d /var/motr2 ] && mv /var/motr /var/motr2 || true'
 
     log "${FUNCNAME[0]}: prepare dirs..."
     run_on_both 'mkdir -p /var/motr{1,2}'
-    ln -sf /var/motr1 /var/motr
+    ssh $lnode 'ln -sf /var/motr1 /var/motr'
     ssh $rnode 'ln -sf /var/motr2 /var/motr'
 
-    sudo mount $lvolume /var/motr1 || true
+    ssh $lnode "sudo mount $lvolume /var/motr1 || true"
     ssh $rnode "sudo mount $rvolume /var/motr2 || true"
 }
 
